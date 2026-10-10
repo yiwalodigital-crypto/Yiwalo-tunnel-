@@ -2,7 +2,7 @@ name: Compiler YIWALO Tunnel APK
 
 on:
   push:
-    branches: [principal]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
