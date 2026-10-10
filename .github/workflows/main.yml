@@ -26,22 +26,33 @@ jobs:
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Installer Gradle
         uses: gradle/actions/setup-gradle@v4
+        # Si ton projet est dans un sous-dossier, décommente la ligne ci-dessous et mets le chemin (ex: './dossier')
+        # with:
+        #   build-root-directory: '.'
+
+      - name: Rendre gradlew exécutable
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+          elif [ -f gradle/wrapper/gradle-wrapper.properties ]; then
+            # Au cas où Gradle Wrapper est présent mais sans le script gradlew à la racine
+            gradle wrapper
+            chmod +x ./gradlew
+          fi
 
       - name: Compiler APK
         run: |
           if [ -f ./gradlew ]; then
-            chmod +x ./gradlew
             ./gradlew assembleDebug --stacktrace
           elif [ -f ./build.gradle ] || [ -f ./build.gradle.kts ]; then
             gradle assembleDebug --stacktrace
           else
-            echo "ERREUR : fichier Gradle introuvable a la racine."
-            echo "Verifier la structure du projet Android."
+            echo "ERREUR : fichier Gradle introuvable."
             exit 1
           fi
 
