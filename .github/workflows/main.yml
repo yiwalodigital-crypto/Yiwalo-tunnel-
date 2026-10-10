@@ -16,6 +16,13 @@ jobs:
       - name: Recuperer le projet
         uses: actions/checkout@v4
 
+      - name: Verifier les fichiers Android
+        run: |
+          echo "Contenu du projet :"
+          ls -la
+          echo "Recherche des fichiers Gradle..."
+          find . -maxdepth 4 \( -name gradlew -o -name build.gradle -o -name build.gradle.kts -o -name settings.gradle -o -name settings.gradle.kts \) -print
+
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
@@ -26,9 +33,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Compiler APK
-        run: gradle --version && gradle assembleDebug --stacktrace
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --stacktrace
+          elif [ -f ./build.gradle ] || [ -f ./build.gradle.kts ]; then
+            gradle assembleDebug --stacktrace
+          else
+            echo "ERREUR : fichier Gradle introuvable a la racine."
+            echo "Verifier la structure du projet Android."
+            exit 1
+          fi
 
       - name: Publier APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: YIWALO-Tunnel-APK
